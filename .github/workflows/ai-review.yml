@@ -5,8 +5,7 @@ on:
     branches: ["main"]
 
 permissions:
-  contents: read
-  pull-requests: write
+  contents: write
 
 jobs:
   ai-review:
@@ -14,8 +13,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -23,11 +20,39 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install openai requests
+        run: pip install requests
 
       - name: Run AI Reviewer
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-        run: python .github/scripts/ai_review.py
+        run: |
+          python - <<'PYEOF'
+          import os, subprocess, requests, json
+
+          api_key = os.environ["GEMINI_API_KEY"]
+          token = os.environ["GITHUB_TOKEN"]
+          repo = os.environ["REPO"]
+
+          result = subprocess.run(["git","diff","--name-only","HEAD~1...HEAD"], capture_output=True, text=True)
+          files = [f for f in result.stdout.strip().splitlines() if f.endswith((".py",".js",".ts")) and os.path.isfile(f)]
+
+          if not files:
+              print("No files to review")
+              exit(0)
+
+          body = "## AI Code Review\n"
+          for path in files:
+              code = open(path).read()[:6000]
+              prompt = "Review this code for bugs and improvements. Be concise.\n\n" + path + ":\n" + code
+              url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + api_key
+              resp = requests.post(url, json={"contents":[{"parts":[{"text":prompt}]}]})
+              review = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+              body += "\n### " + path + "\n" + review + "\n"
+
+          sha = subprocess.run(["git","rev-parse","HEAD"], capture_output=True, text=True).stdout.strip()
+          url2 = "https://api.github.com/repos/" + repo + "/commits/" + sha + "/comments"
+          requests.post(url2, json={"body": body}, headers={"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json"}).raise_for_status()
+          print("Done!")
+          PYEOF
