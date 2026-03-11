@@ -11,3 +11,74 @@ Arabic Language
 Islamic Studies
 Fiqh
 A Footer containing academy information, useful links, and contact details.
+Improve and reorganize the UI layout of the Tahleem Academy website to make it clean, professional, and properly aligned.
+
+Fix the following issues:
+
+1. HEADER & NAVIGATION
+- Keep the Tahleem Academy logo/title centered or left aligned.
+- Place the hamburger menu on the right side of the header.
+- When the hamburger is clicked, show a clean vertical dropdown menu with proper spacing.
+- The menu items should be:
+  Admin Dashboard
+  Student Dashboard
+  Courses
+  Settings
+  About
+- Each menu item should appear on a separate line with padding and hover effects.
+- Ensure the menu is responsive and works well on mobile and desktop.
+
+2. HERO SECTION
+- Center the welcome message properly.
+- Add better spacing between the title and description.
+- Use large bold text for:
+  “Welcome to Tahleem Academy”
+- Add a professional subtitle:
+  “Learn Quran, Arabic, Islamic Studies and Fiqh with expert instructors.”
+- Add a “Browse Courses” button below the text.
+
+3. COURSE SECTION
+- Display the 4 course cards in a clean grid layout.
+- On desktop: show 4 cards in one row.
+- On tablet: show 2 cards per row.
+- On mobile: show 1 card per row.
+
+Courses:
+- Quran
+- Arabic
+- Islamic Studies
+- Fiqh
+
+Each course card should include:
+- Course title
+- Short description
+- Icon related to the subject
+- A “View Course” button
+- Rounded corners and soft shadow.
+
+4. DESIGN & COLORS
+Use the Islamic theme colors:
+- Dark Green (#0f3d2e)
+- Gold (#d4af37)
+- Off-white (#f8f6f1)
+
+Make the design modern and elegant with:
+- consistent spacing
+- balanced padding
+- proper typography
+- smooth hover animations.
+
+5. FOOTER
+Add a professional footer with:
+- Tahleem Academy name
+- Quick links (Courses, About, Contact)
+- Copyright text
+- Social media icons.
+
+6. RESPONSIVENESS
+Ensure the entire website is fully responsive and looks clean on:
+- mobile
+- tablet
+- desktop
+
+Do not remove existing functionality. Only improve the UI layout, spacing, alignment, and design quality.
