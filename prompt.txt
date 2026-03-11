@@ -1,5 +1,13 @@
-Create a beautiful Islamic e-learning website called Tahleem Academy. 
-Use dark green, gold and off-white colors. Include a header, 
-hero section with welcome message, 4 course cards for Quran, 
-Arabic, Islamic Studies and Fiqh, and a footer.
-add hamburger show8ng the admin student dashboard courses settings about 
+Create a beautiful and modern Islamic e-learning website called Tahleem Academy.
+Use an elegant color scheme of dark green, gold, and off-white to reflect a classic Islamic aesthetic.
+The website should include:
+Header (Navigation Bar) with the academy logo and main navigation.
+A hamburger menu that reveals the following sections:
+Admin Dashboard, Student Dashboard, Courses, Settings, and About.
+A Hero Section with a welcoming message introducing Tahleem Academy and its mission to teach Islamic knowledge online.
+Four course cards displayed in a clean layout for the main subjects:
+Qur'an Studies
+Arabic Language
+Islamic Studies
+Fiqh
+A Footer containing academy information, useful links, and contact details.
