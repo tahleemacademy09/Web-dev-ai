@@ -3,9 +3,9 @@ import subprocess
 import requests
 import openai
 
-SUPPORTED_EXTENSIONS = {".py", ".js", ".ts", ".jsx", ".tsx", ".go", ".java", ".rb", ".rs"}
+SUPPORTED_EXTENSIONS = {".py", ".js", ".ts", ".jsx", ".tsx"}
 MODEL = "gpt-4o"
-MAX_CHARS_PER_FILE = 8_000
+MAX_CHARS_PER_FILE = 8000
 
 def get_changed_files():
     result = subprocess.run(
@@ -20,24 +20,18 @@ def read_file(path):
         with open(path, "r", encoding="utf-8") as f:
             return f.read()[:MAX_CHARS_PER_FILE]
     except Exception as e:
-        return f"[Could not read file: {e}]"
+        return "[Could not read file: " + str(e) + "]"
 
 def review_file(path, code):
     client = openai.OpenAI()
-    prompt = f"""You are a senior software engineer doing a code review.
-Review the following file: `{path}`
-
-Focus on:
-- Bugs or logic errors
-- Security issues
-- Performance improvements
-- Readability and naming
-- Missing error handling
-
-Format your response as a concise markdown list. If the code looks good, say so briefly.
-Do NOT rewrite the whole file — only point out specific issues with line references where possible.
-{code}
-response = client.chat.completions.create(
+    prompt = (
+        "You are a senior software engineer doing a code review.\n"
+        "Review this file: " + path + "\n\n"
+        "Focus on bugs, security issues, performance, and readability.\n"
+        "Be concise. Use markdown bullet points.\n\n"
+        "Code:\n" + code
+    )
+    response = client.chat.completions.create(
         model=MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0,
@@ -49,27 +43,26 @@ def post_github_comment(body):
     token = os.environ["GITHUB_TOKEN"]
     repo = os.environ["REPO"]
     sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-    url = f"https://api.github.com/repos/{repo}/commits/{sha}/comments"
+    url = "https://api.github.com/repos/" + repo + "/commits/" + sha + "/comments"
     headers = {
-        "Authorization": f"Bearer {token}",
+        "Authorization": "Bearer " + token,
         "Accept": "application/vnd.github+json",
     }
     response = requests.post(url, json={"body": body}, headers=headers)
     response.raise_for_status()
-    print(f"Comment posted!")
+    print("Comment posted!")
 
 def main():
     changed_files = get_changed_files()
     if not changed_files:
-        print("No supported files changed. Skipping review.")
+        print("No supported files changed. Skipping.")
         return
-    sections = ["## 🤖 AI Code Review\n"]
-    sections.append(f"Reviewed **{len(changed_files)}** changed file(s).\n---\n")
+    sections = ["## AI Code Review\n"]
     for path in changed_files:
         code = read_file(path)
         review = review_file(path, code)
-        sections.append(f"### `{path}`\n{review}\n")
-    sections.append("---\n*Automated review. Use your own judgment before merging.*")
+        sections.append("### " + path + "\n" + review + "\n")
+    sections.append("---\nAutomated review. Use your own judgment.")
     post_github_comment("\n".join(sections))
 
 if __name__ == "__main__":
