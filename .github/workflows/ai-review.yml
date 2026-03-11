@@ -29,7 +29,7 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           python - <<'PYEOF'
-          import os, subprocess, requests
+          import os, subprocess, requests, json
 
           api_key = os.environ["GEMINI_API_KEY"]
           token = os.environ["GITHUB_TOKEN"]
@@ -49,7 +49,12 @@ jobs:
               prompt = "Review this code for bugs and improvements. Be concise.\n\n" + path + ":\n" + code
               url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + api_key
               resp = requests.post(url, json={"contents":[{"parts":[{"text":prompt}]}]})
-              review = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+              data = resp.json()
+              print("Gemini response:", json.dumps(data)[:500])
+              if "candidates" not in data:
+                  print("Error from Gemini:", data)
+                  exit(1)
+              review = data["candidates"][0]["content"]["parts"][0]["text"]
               body += "\n### " + path + "\n" + review + "\n"
 
           sha = subprocess.run(["git","rev-parse","HEAD"], capture_output=True, text=True).stdout.strip()
