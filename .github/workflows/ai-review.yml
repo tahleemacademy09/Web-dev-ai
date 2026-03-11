@@ -29,7 +29,7 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           python - <<'PYEOF'
-          import os, subprocess, requests, json
+          import os, subprocess, requests
 
           api_key = os.environ["GROQ_API_KEY"]
           token = os.environ["GITHUB_TOKEN"]
@@ -52,38 +52,16 @@ jobs:
                   headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
                   json={"model": "llama3-8b-8192", "messages": [{"role": "user", "content": prompt}], "max_tokens": 800}
               )
-              review = resp.json()["choices"][0]["message"]["content"]
+              data = resp.json()
+              print("Groq:", str(data)[:200])
+              if "choices" not in data:
+                  print("Error:", data)
+                  exit(1)
+              review = data["choices"][0]["message"]["content"]
               body += "\n### " + path + "\n" + review + "\n"
 
           sha = subprocess.run(["git","rev-parse","HEAD"], capture_output=True, text=True).stdout.strip()
           url = "https://api.github.com/repos/" + repo + "/commits/" + sha + "/comments"
           requests.post(url, json={"body": body}, headers={"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json"}).raise_for_status()
-          print("Done!")
-          PYEOF
-          result = subprocess.run(["git","show","--name-only","--format=","HEAD"], capture_output=True, text=True)
-          all_files = result.stdout.strip().splitlines()
-          files = [f for f in all_files if f.endswith((".py",".js",".ts")) and os.path.isfile(f)]
-
-          if not files:
-              print("No files to review")
-              exit(0)
-
-          body = "## AI Code Review\n"
-          for path in files:
-              code = open(path).read()[:6000]
-              prompt = "Review this code for bugs and improvements. Be concise.\n\n" + path + ":\n" + code
-              url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + api_key
-              resp = requests.post(url, json={"contents":[{"parts":[{"text":prompt}]}]})
-              data = resp.json()
-              print("Gemini response:", json.dumps(data)[:500])
-              if "candidates" not in data:
-                  print("Error from Gemini:", data)
-                  exit(1)
-              review = data["candidates"][0]["content"]["parts"][0]["text"]
-              body += "\n### " + path + "\n" + review + "\n"
-
-          sha = subprocess.run(["git","rev-parse","HEAD"], capture_output=True, text=True).stdout.strip()
-          url2 = "https://api.github.com/repos/" + repo + "/commits/" + sha + "/comments"
-          requests.post(url2, json={"body": body}, headers={"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json"}).raise_for_status()
           print("Done!")
           PYEOF
