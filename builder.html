@@ -7,7 +7,7 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: #0d1f15; color: #f5f0e8; font-family: Georgia, serif; height: 100vh; display: flex; flex-direction: column; }
-#header { background: #1a3a2a; border-bottom: 2px solid #b8962e; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+#header { background: #1a3a2a; border-bottom: 2px solid #b8962e; padding: 12px 16px; }
 #header h1 { color: #b8962e; font-size: 16px; }
 #header p { color: #6a9070; font-size: 11px; }
 #settings { background: #142a1c; border-bottom: 1px solid #1e3828; padding: 14px 16px; }
@@ -27,14 +27,112 @@ body { background: #0d1f15; color: #f5f0e8; font-family: Georgia, serif; height:
 <body>
 
 <div id="header">
-  <div>
-    <h1>✦ AI Website Builder</h1>
-    <p>Type • Build • Deploy</p>
-  </div>
+  <h1>✦ AI Website Builder</h1>
+  <p>Type • Build • Deploy</p>
 </div>
 
 <div id="settings">
   <label>GitHub Token</label>
+  <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxx" />
+</div>
+
+<div id="status"></div>
+
+<div id="messages">
+  <div class="msg assistant">Assalamu Alaikum! 👋
+
+Enter your GitHub Token above, then describe what you want to build!
+
+I'll send your request to the AI via GitHub Actions and your website will update automatically in about 30 seconds.</div>
+</div>
+
+<div id="input-area">
+  <textarea id="input" rows="2" placeholder="Describe what you want to build..."></textarea>
+  <button id="send-btn" onclick="handleSend()">➤</button>
+</div>
+
+<script>
+const REPO = "tahleemacademy09/Web-dev-ai";
+
+async function getFileSha(filepath) {
+  const token = document.getElementById('token').value;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${filepath}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.sha;
+    }
+  } catch(e) {}
+  return null;
+}
+
+async function updateFile(filepath, content, message) {
+  const token = document.getElementById('token').value;
+  const sha = await getFileSha(filepath);
+  const body = {
+    message,
+    content: btoa(unescape(encodeURIComponent(content)))
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${filepath}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+
+function addMessage(text, role) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.textContent = text;
+  document.getElementById('messages').appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth' });
+}
+
+function setStatus(text) {
+  const el = document.getElementById('status');
+  el.style.display = text ? 'block' : 'none';
+  el.textContent = text;
+}
+
+async function handleSend() {
+  const token = document.getElementById('token').value;
+  const input = document.getElementById('input');
+  const btn = document.getElementById('send-btn');
+  const userMsg = input.value.trim();
+  if (!userMsg) return;
+  if (!token) { addMessage('⚠️ Please enter your GitHub Token first!', 'assistant'); return; }
+
+  input.value = '';
+  btn.disabled = true;
+  addMessage(userMsg, 'user');
+
+  try {
+    setStatus('📤 Sending to GitHub...');
+    const success = await updateFile('prompt.txt', userMsg, 'AI Builder: ' + userMsg.slice(0, 50));
+
+    if (success) {
+      addMessage(`✅ Request sent! The AI is now building your website.\n\n⏳ Wait about 30-60 seconds then check:\n🌐 https://tahleemacademy09.github.io/Web-dev-ai\n\nWhat would you like to build next?`, 'assistant');
+    } else {
+      throw new Error('Failed to update GitHub. Check your token.');
+    }
+  } catch(err) {
+    addMessage(`❌ Error: ${err.message}`, 'assistant');
+  } finally {
+    btn.disabled = false;
+    setStatus('');
+  }
+}
+
+document.getElementById('input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+});
+</script>
+</body>
+</html>  <label>GitHub Token</label>
   <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxx" />
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div>
