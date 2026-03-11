@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Website Builder</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0d1f15; color: #f5f0e8; font-family: Georgia, serif; height: 100vh; display: flex; flex-direction: column; }
+#header { background: #1a3a2a; border-bottom: 2px solid #b8962e; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+#header h1 { color: #b8962e; font-size: 16px; }
+#header p { color: #6a9070; font-size: 11px; }
+#settings { background: #142a1c; border-bottom: 1px solid #1e3828; padding: 14px 16px; }
+#settings input { width: 100%; padding: 8px 10px; background: #0d1f15; border: 1px solid #1e3828; border-radius: 6px; color: #f5f0e8; font-size: 13px; margin-top: 4px; margin-bottom: 10px; }
+#settings label { font-size: 11px; color: #6a9070; }
+#messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 80%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+.assistant { background: #1a3a2a; border: 1px solid #1e3828; align-self: flex-start; }
+.user { background: #b8962e; color: #0d1f15; align-self: flex-end; font-weight: bold; }
+#input-area { padding: 12px 16px; background: #1a3a2a; border-top: 1px solid #1e3828; display: flex; gap: 8px; }
+#input-area textarea { flex: 1; padding: 10px 12px; background: #0d1f15; border: 1px solid #1e3828; border-radius: 10px; color: #f5f0e8; font-size: 13px; resize: none; font-family: Georgia, serif; }
+#send-btn { width: 44px; height: 44px; background: #b8962e; border: none; border-radius: 10px; color: #0d1f15; font-size: 18px; cursor: pointer; }
+#send-btn:disabled { background: #1e3828; color: #4a6a55; cursor: not-allowed; }
+#status { font-size: 11px; color: #b8962e; padding: 4px 16px; background: #142a1c; text-align: center; display: none; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <h1>✦ AI Website Builder</h1>
+    <p>Type • Build • Deploy</p>
+  </div>
+</div>
+
+<div id="settings">
+  <label>GitHub Token</label>
+  <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxxxxxx" />
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div>
+      <label>Repository</label>
+      <input type="text" id="repo" value="tahleemacademy09/Web-dev-ai" />
+    </div>
+    <div>
+      <label>File to update</label>
+      <input type="text" id="filepath" value="index.html" />
+    </div>
+  </div>
+</div>
+
+<div id="status"></div>
+
+<div id="messages">
+  <div class="msg assistant">Assalamu Alaikum! 👋
+
+Enter your GitHub Token above, then describe what you want to build and I'll push it to your repo automatically!</div>
+</div>
+
+<div id="input-area">
+  <textarea id="input" rows="2" placeholder="Describe what you want to build..."></textarea>
+  <button id="send-btn" onclick="handleSend()">➤</button>
+</div>
+
+<script>
+async function getFileSha() {
+  const repo = document.getElementById('repo').value;
+  const token = document.getElementById('token').value;
+  const filepath = document.getElementById('filepath').value;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${filepath}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { sha: data.sha, content: atob(data.content.replace(/\n/g, '')) };
+    }
+  } catch(e) {}
+  return { sha: null, content: '' };
+}
+
+async function pushToGitHub(code) {
+  const repo = document.getElementById('repo').value;
+  const token = document.getElementById('token').value;
+  const filepath = document.getElementById('filepath').value;
+  const { sha } = await getFileSha();
+  const body = { message: 'AI Website Builder update', content: btoa(unescape(encodeURIComponent(code))) };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/${filepath}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+
+function addMessage(text, role) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.textContent = text;
+  document.getElementById('messages').appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth' });
+}
+
+function setStatus(text) {
+  const el = document.getElementById('status');
+  el.style.display = text ? 'block' : 'none';
+  el.textContent = text;
+}
+
+async function handleSend() {
+  const token = document.getElementById('token').value;
+  const input = document.getElementById('input');
+  const btn = document.getElementById('send-btn');
+  const userMsg = input.value.trim();
+  if (!userMsg) return;
+  if (!token) { addMessage('⚠️ Please enter your GitHub Token first!', 'assistant'); return; }
+
+  input.value = '';
+  btn.disabled = true;
+  addMessage(userMsg, 'user');
+
+  try {
+    setStatus('🤖 Generating your website...');
+    const { content: existing } = await getFileSha();
+
+    const prompt = existing
+      ? `Current HTML:\n${existing.slice(0, 3000)}\n\nUser request: ${userMsg}\n\nUpdate the HTML. Return ONLY raw HTML starting with <!DOCTYPE html>. No explanation.`
+      : `Create a complete beautiful website: ${userMsg}\n\nReturn ONLY raw HTML starting with <!DOCTYPE html>. No explanation, no markdown.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    let html = data.content?.[0]?.text?.trim() || '';
+    if (html.includes('```')) { html = html.split('```')[1] || html; if (html.startsWith('html')) html = html.slice(4); }
+    if (!html.includes('<!DOCTYPE')) throw new Error('AI did not return valid HTML');
+
+    setStatus('📤 Pushing to GitHub...');
+    const success = await pushToGitHub(html);
+
+    if (success) {
+      const repo = document.getElementById('repo').value;
+      const liveUrl = `https://${repo.split('/')[0]}.github.io/${repo.split('/')[1]}`;
+      addMessage(`✅ Done! Your website has been updated!\n\n🌐 Live at: ${liveUrl}\n\nWhat would you like to change next?`, 'assistant');
+    } else {
+      throw new Error('Failed to push to GitHub. Check your token and repo name.');
+    }
+  } catch(err) {
+    addMessage(`❌ Error: ${err.message}`, 'assistant');
+  } finally {
+    btn.disabled = false;
+    setStatus('');
+  }
+}
+
+document.getElementById('input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+});
+</script>
+</body>
+</html>
