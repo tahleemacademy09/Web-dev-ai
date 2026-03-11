@@ -1,14 +1,16 @@
-name: AI Code Reviewer
+name: AI Website Builder
 
 on:
   push:
     branches: ["main"]
+    paths:
+      - "prompt.txt"
 
 permissions:
   contents: write
 
 jobs:
-  ai-review:
+  build-website:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Run AI Reviewer
+      - name: Build Website from Prompt
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -35,33 +37,41 @@ jobs:
           token = os.environ["GITHUB_TOKEN"]
           repo = os.environ["REPO"]
 
-          result = subprocess.run(["git","show","--name-only","--format=","HEAD"], capture_output=True, text=True)
-          all_files = result.stdout.strip().splitlines()
-          files = [f for f in all_files if f.endswith((".py",".js",".ts")) and os.path.isfile(f)]
+          prompt = open("prompt.txt").read()
+          print("Building website for:", prompt[:100])
 
-          if not files:
-              print("No files to review")
-              exit(0)
+          instruction = (
+              "You are a web developer. Based on the following description, "
+              "generate a complete single HTML file with embedded CSS and JavaScript. "
+              "Return ONLY the raw HTML code starting with <!DOCTYPE html>. "
+              "No explanation, no markdown, no code blocks.\n\n"
+              "Description: " + prompt
+          )
 
-          body = "## AI Code Review\n"
-          for path in files:
-              code = open(path).read()[:6000]
-              prompt = "Review this code for bugs and improvements. Be concise.\n\n" + path + ":\n" + code
-              resp = requests.post(
-                  "https://api.groq.com/openai/v1/chat/completions",
-                  headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
-                  json={"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": prompt}], "max_tokens": 800}
-              )
-              data = resp.json()
-              print("Groq:", str(data)[:200])
-              if "choices" not in data:
-                  print("Error:", data)
-                  exit(1)
-              review = data["choices"][0]["message"]["content"]
-              body += "\n### " + path + "\n" + review + "\n"
+          resp = requests.post(
+              "https://api.groq.com/openai/v1/chat/completions",
+              headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
+              json={"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": instruction}], "max_tokens": 4000}
+          )
+          data = resp.json()
+          if "choices" not in data:
+              print("Error:", data)
+              exit(1)
 
-          sha = subprocess.run(["git","rev-parse","HEAD"], capture_output=True, text=True).stdout.strip()
-          url = "https://api.github.com/repos/" + repo + "/commits/" + sha + "/comments"
-          requests.post(url, json={"body": body}, headers={"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json"}).raise_for_status()
+          html = data["choices"][0]["message"]["content"].strip()
+          if html.startswith("```"):
+              html = html.split("```")[1]
+              if html.startswith("html"):
+                  html = html[4:]
+
+          with open("index.html", "w") as f:
+              f.write(html)
+          print("index.html generated!")
+
+          subprocess.run(["git", "config", "--global", "user.name", "github-actions"])
+          subprocess.run(["git", "config", "--global", "user.email", "actions@github.com"])
+          subprocess.run(["git", "add", "index.html"])
+          subprocess.run(["git", "commit", "-m", "AI generated website"])
+          subprocess.run(["git", "push"])
           print("Done!")
           PYEOF
