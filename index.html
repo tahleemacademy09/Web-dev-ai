@@ -5,155 +5,183 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tahleem Academy</title>
     <style>
+        /* Global Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f6f1;
             padding: 0;
-            background-color: #f5f5f5;
-        }
-        .header {
-            background-color: #2f4f4f;
-            color: #ffffff;
-            padding: 20px;
-            text-align: center;
-        }
-        .header img {
-            width: 50px;
-            height: 50px;
-            margin-right: 20px;
-        }
-        .nav-bar {
-            background-color: #2f4f4f;
-            color: #ffffff;
-            padding: 10px;
-            text-align: center;
-        }
-        .nav-bar ul {
-            list-style: none;
             margin: 0;
-            padding: 0;
         }
-        .nav-bar li {
-            display: inline-block;
-            margin-right: 20px;
-        }
-        .nav-bar a {
-            color: #ffffff;
+        a {
             text-decoration: none;
+            color: #d4af37;
         }
-        .hamburger-menu {
+        a:hover {
+            color: #0f3d2e;
+        }
+        /* Header Styles */
+        .header {
+            background-color: #0f3d2e;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header .logo {
+            font-size: 1.5rem;
+            color: #d4af37;
+            font-weight: bold;
+        }
+        .header .hamburger {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #d4af37;
+        }
+        .header .hamburger:hover {
+            color: #fff;
+        }
+        .dropdown-menu {
             display: none;
-            background-color: #2f4f4f;
-            color: #ffffff;
-            padding: 10px;
+            background-color: #0f3d2e;
+            padding: 1rem;
+            position: absolute;
+            top: 4rem;
+            right: 1rem;
+            width: 15rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+        .dropdown-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .dropdown-menu li {
+            padding: 0.5rem;
+            border-bottom: 1px solid #333;
+        }
+        .dropdown-menu li:hover {
+            background-color: #d4af37;
+            color: #0f3d2e;
+        }
+        .dropdown-menu li a {
+            color: #fff;
+        }
+        .dropdown-menu li a:hover {
+            color: #0f3d2e;
+        }
+        /* Hero Section Styles */
+        .hero {
+            background-image: linear-gradient(to bottom, #0f3d2e, #d4af37);
+            padding: 5rem;
+            text-align: center;
+            color: #fff;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .hero button {
+            background-color: #d4af37;
+            color: #0f3d2e;
+            padding: 1rem 2rem;
             border: none;
-            border-radius: 5px;
+            border-radius: 0.5rem;
             cursor: pointer;
         }
-        .hamburger-menu div {
-            width: 20px;
-            height: 2px;
-            background-color: #ffffff;
-            margin-bottom: 5px;
+        .hero button:hover {
+            background-color: #0f3d2e;
+            color: #d4af37;
         }
-        .mobile-menu {
-            display: none;
-            background-color: #2f4f4f;
-            color: #ffffff;
-            padding: 10px;
-            position: absolute;
-            top: 60px;
-            left: 0;
-            width: 100%;
+        /* Course Section Styles */
+        .courses {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            padding: 2rem;
         }
-        .mobile-menu ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
+        .course {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
-        .mobile-menu li {
-            margin-bottom: 10px;
+        .course h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
         }
-        .mobile-menu a {
-            color: #ffffff;
-            text-decoration: none;
+        .course p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
         }
-        .hero-section {
-            background-image: linear-gradient(to bottom, #8bc34a, #3e8e41);
-            color: #ffffff;
-            padding: 100px;
-            text-align: center;
+        .course button {
+            background-color: #d4af37;
+            color: #0f3d2e;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
         }
-        .hero-section h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
+        .course button:hover {
+            background-color: #0f3d2e;
+            color: #d4af37;
         }
-        .course-cards {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 20px;
-        }
-        .course-card {
-            background-color: #ffffff;
-            padding: 20px;
-            margin: 20px;
-            width: 200px;
-            border: 1px solid #dddddd;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .course-card h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
+        /* Footer Styles */
         .footer {
-            background-color: #2f4f4f;
-            color: #ffffff;
-            padding: 20px;
+            background-color: #0f3d2e;
+            padding: 1rem;
             text-align: center;
+            color: #fff;
+        }
+        .footer h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
         }
         .footer ul {
             list-style: none;
-            margin: 0;
             padding: 0;
+            margin: 0;
         }
         .footer li {
-            margin-bottom: 10px;
+            padding: 0.5rem;
+            border-bottom: 1px solid #333;
         }
-        .footer a {
-            color: #ffffff;
-            text-decoration: none;
+        .footer li a {
+            color: #fff;
         }
+        .footer li a:hover {
+            color: #d4af37;
+        }
+        /* Media Queries */
         @media only screen and (max-width: 768px) {
-            .nav-bar {
-                display: none;
+            .courses {
+                grid-template-columns: repeat(2, 1fr);
             }
-            .hamburger-menu {
-                display: block;
+        }
+        @media only screen and (max-width: 480px) {
+            .courses {
+                grid-template-columns: repeat(1, 1fr);
             }
         }
     </style>
 </head>
 <body>
     <header class="header">
-        <img src="logo.png" alt="Tahleem Academy Logo">
-        <h1>Tahleem Academy</h1>
-        <button class="hamburger-menu" id="hamburger-menu">
-            <div></div>
-            <div></div>
-            <div></div>
-        </button>
-        <nav class="nav-bar">
-            <ul>
-                <li><a href="#">Admin Dashboard</a></li>
-                <li><a href="#">Student Dashboard</a></li>
-                <li><a href="#">Courses</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="#">About</a></li>
-            </ul>
-        </nav>
-        <div class="mobile-menu" id="mobile-menu">
+        <div class="logo">Tahleem Academy</div>
+        <div class="hamburger" onclick="toggleDropdown()">&#9776;</div>
+        <div class="dropdown-menu" id="dropdown-menu">
             <ul>
                 <li><a href="#">Admin Dashboard</a></li>
                 <li><a href="#">Student Dashboard</a></li>
@@ -163,47 +191,56 @@
             </ul>
         </div>
     </header>
-    <section class="hero-section">
+    <section class="hero">
         <h1>Welcome to Tahleem Academy</h1>
-        <p>Tahleem Academy is an online Islamic learning platform dedicated to providing high-quality educational resources and courses to students of all ages.</p>
+        <p>Learn Quran, Arabic, Islamic Studies and Fiqh with expert instructors.</p>
+        <button>Browse Courses</button>
     </section>
-    <section class="course-cards">
-        <div class="course-card">
-            <h2>Qur'an Studies</h2>
-            <p>Learn the fundamentals of the Holy Quran and gain a deeper understanding of its teachings.</p>
+    <section class="courses">
+        <div class="course">
+            <h2>Quran Studies</h2>
+            <p>Learn the basics of Quran recitation and understanding.</p>
+            <button>View Course</button>
         </div>
-        <div class="course-card">
+        <div class="course">
             <h2>Arabic Language</h2>
-            <p>Master the Arabic language and improve your reading, writing, and speaking skills.</p>
+            <p>Learn the Arabic language and its grammar rules.</p>
+            <button>View Course</button>
         </div>
-        <div class="course-card">
+        <div class="course">
             <h2>Islamic Studies</h2>
-            <p>Explore the basics of Islamic theology, history, and culture, and gain a comprehensive understanding of the faith.</p>
+            <p>Learn about Islamic history, jurisprudence, and theology.</p>
+            <button>View Course</button>
         </div>
-        <div class="course-card">
+        <div class="course">
             <h2>Fiqh</h2>
-            <p>Study the principles of Islamic jurisprudence and learn how to apply them in everyday life.</p>
+            <p>Learn about Islamic jurisprudence and its applications.</p>
+            <button>View Course</button>
         </div>
     </section>
     <footer class="footer">
         <h2>Tahleem Academy</h2>
         <ul>
-            <li><a href="#">Contact Us</a></li>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Terms and Conditions</a></li>
+            <li><a href="#">Courses</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Contact</a></li>
         </ul>
         <p>&copy; 2023 Tahleem Academy. All rights reserved.</p>
+        <div>
+            <a href="#" target="_blank"><img src="https://img.icons8.com/color/48/000000/facebook.png" alt="Facebook"></a>
+            <a href="#" target="_blank"><img src="https://img.icons8.com/color/48/000000/twitter.png" alt="Twitter"></a>
+            <a href="#" target="_blank"><img src="https://img.icons8.com/color/48/000000/instagram.png" alt="Instagram"></a>
+        </div>
     </footer>
     <script>
-        const hamburgerMenu = document.getElementById('hamburger-menu');
-        const mobileMenu = document.getElementById('mobile-menu');
-        hamburgerMenu.addEventListener('click', () => {
-            if (mobileMenu.style.display === 'block') {
-                mobileMenu.style.display = 'none';
+        function toggleDropdown() {
+            var dropdownMenu = document.getElementById("dropdown-menu");
+            if (dropdownMenu.style.display === "block") {
+                dropdownMenu.style.display = "none";
             } else {
-                mobileMenu.style.display = 'block';
+                dropdownMenu.style.display = "block";
             }
-        });
+        }
     </script>
 </body>
 </html>
