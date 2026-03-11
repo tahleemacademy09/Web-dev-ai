@@ -47,7 +47,7 @@ jobs:
           for path in files:
               code = open(path).read()[:6000]
               prompt = "Review this code for bugs and improvements. Be concise.\n\n" + path + ":\n" + code
-              url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + api_key
+              url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + api_key
               resp = requests.post(url, json={"contents":[{"parts":[{"text":prompt}]}]})
               data = resp.json()
               print("Gemini response:", json.dumps(data)[:500])
